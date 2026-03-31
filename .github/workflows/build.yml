@@ -1,18 +1,29 @@
-name: Build Cleanflight NAZE (Bluepill)
+name: Build Cleanflight NAZE
 
 on: [push]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+build:
+runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
+steps:
+- uses: actions/checkout@v4
 
-    - name: Install toolchain
-      run: |
-        sudo apt update
-        sudo apt install -y gcc-arm-none-eabi make
+- name: Install dependencies
+  run: |
+    sudo apt update
+    sudo apt install -y make git
 
-    - name: Build NAZE
-      run: make TARGET=NAZE
+- name: Install correct ARM toolchain (auto)
+  run: |
+    make arm_sdk_install
+
+- name: Build NAZE
+  run: |
+    make TARGET=NAZE
+
+- name: Upload firmware
+  uses: actions/upload-artifact@v4
+  with:
+    name: firmware
+    path: obj/
