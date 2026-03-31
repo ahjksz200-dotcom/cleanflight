@@ -1,32 +1,18 @@
-name: Build Baseflight (Bluepill NAZE)
+name: Build Cleanflight NAZE (Bluepill)
 
-on:
-push:
-pull_request:
+on: [push]
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-steps:
-- name: Checkout source
-  uses: actions/checkout@v3
+    steps:
+    - uses: actions/checkout@v3
 
-- name: Install ARM toolchain
-  run: |
-    sudo apt update
-    sudo apt install -y gcc-arm-none-eabi make
+    - name: Install toolchain
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-arm-none-eabi make
 
-- name: Clean build
-  run: make clean
-
-- name: Build NAZE target
-  run: make NAZE
-
-- name: Upload firmware
-  uses: actions/upload-artifact@v4
-  with:
-    name: baseflight-naze-bluepill
-    path: |
-      obj/main/baseflight_NAZE.hex
-      obj/main/baseflight_NAZE.bin
+    - name: Build NAZE
+      run: make TARGET=NAZE
