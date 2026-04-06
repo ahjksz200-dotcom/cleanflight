@@ -1,29 +1,33 @@
-name: Build Cleanflight NAZE
+name: Build Cleanflight BluePill 128KB
 
-on: [push]
+on: 
+  push:
+    branches: [ master, main ]
+  workflow_dispatch: # Cho phép bạn bấm nút "Run workflow" thủ công
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-steps:
-- uses: actions/checkout@v4
+      - name: Install ARM Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi make
 
-- name: Install dependencies
-  run: |
-    sudo apt update
-    sudo apt install -y make git
+      - name: Build Firmware
+        run: |
+          # Build cho target NAZE (Cấu hình chúng ta đã sửa trong board.h)
+          make TARGET=NAZE
+          
+          # Chuyển đổi file .elf sang .bin để nạp bằng ZFlasher (Android)
+          # Lưu ý: Tên file .elf có thể là cleanflight.elf hoặc obj/cleanflight_NAZE.elf tùy version
+          arm-none-eabi-objcopy -O binary obj/cleanflight_NAZE.elf cleanflight_bluepill.bin
 
-- name: Install correct ARM toolchain (auto)
-  run: |
-    make arm_sdk_install
-
-- name: Build NAZE
-  run: |
-    make TARGET=NAZE
-
-- name: Upload firmware
-  uses: actions/upload-artifact@v4
-  with:
-    name: firmware
-    path: obj/
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cleanflight-Firmware-128K
+          path: Cleanflight_bluepill.bin
